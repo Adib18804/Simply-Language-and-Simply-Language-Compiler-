@@ -1,0 +1,4 @@
+make x = 10
+make y = 20
+make z = x + y
+show z

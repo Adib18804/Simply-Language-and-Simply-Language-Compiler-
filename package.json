@@ -1,0 +1,16 @@
+{
+  "name": "simply-compiler",
+  "version": "1.0.0",
+  "description": "Simply: A Web-Based Educational Compiler for the Simply Programming Language",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "build:compiler": "gcc -O2 -std=c11 -o compiler/simply-compiler.exe compiler/src/main.c compiler/src/lexer.c compiler/src/parser.c compiler/src/ast.c compiler/src/semantic.c compiler/src/symbol_table.c compiler/src/tac.c compiler/src/optimizer.c compiler/src/codegen.c -lm"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  }
+}

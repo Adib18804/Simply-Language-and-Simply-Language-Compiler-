@@ -1,0 +1,4 @@
+SUCCESS=1
+ERRORS=0
+---SYMBOLS---
+SYM	score	INT	0	1

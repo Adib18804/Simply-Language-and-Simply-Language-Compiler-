@@ -1,0 +1,186 @@
+============================================================
+SIMPLY LANGUAGE GRAMMAR
+============================================================
+
+This grammar is designed for Recursive-Descent Parsing.
+All left recursion has been eliminated.
+Left-recursive rule has been transformed to right-recursive with prime forms.
+
+============================================================
+1. LEXICAL TOKENS
+============================================================
+
+KEYWORDS:
+    make, show, ask, check, otherwise, repeat, task, give, finish
+
+LITERALS:
+    INTEGER  -> [0-9]+
+    DECIMAL -> [0-9]+'.'[0-9]+
+    STRING  -> '"' [^"]* '"'
+    BOOLEAN -> true | false
+
+IDENTIFIERS:
+    IDENTIFIER -> [a-zA-Z_][a-zA-Z0-9_]*
+
+OPERATORS:
+    ARITHMETIC: + - * / %
+    COMPARISON: == != < > <= >=
+    LOGICAL:    && || !
+    ASSIGNMENT: =
+
+PUNCTUATION:
+    ( ) { }
+    NEWLINE (statement terminator)
+
+============================================================
+2. FORMAL GRAMMAR (After Left Recursion Elimination)
+============================================================
+
+program -> statement_list
+
+statement_list -> statement statement_list | statement_list_tail
+
+statement_list_tail -> NEWLINE statement_list | ε
+
+statement -> declaration
+           | assignment
+           | output_stmt
+           | input_stmt
+           | conditional
+           | loop_stmt
+           | task_call
+
+--- Declaration ---
+
+declaration -> MAKE IDENTIFIER ASSIGN expression
+
+--- Assignment ---
+
+assignment -> IDENTIFIER ASSIGN expression
+
+--- Output ---
+
+output_stmt -> SHOW expression
+
+--- Input ---
+
+input_stmt -> ASK STRING IDENTIFIER
+
+--- Conditional ---
+
+conditional -> CHECK expression NEWLINE statement_list OTHERWISE NEWLINE statement_list FINISH
+             | CHECK expression NEWLINE statement_list FINISH
+
+--- Loop ---
+
+loop_stmt -> REPEAT expression NEWLINE statement_list FINISH
+
+--- Task/Function ---
+task_decl -> TASK IDENTIFIER LEFT_PAREN RIGHT_PAREN NEWLINE statement_list FINISH
+task_call -> IDENTIFIER LEFT_PAREN RIGHT_PAREN
+give_stmt -> GIVE expression
+
+--- Expression (with precedence) ---
+
+expression -> logical_or_expr
+
+logical_or_expr -> logical_and_expr logical_or_prime
+
+logical_or_prime -> LOGICAL_OR logical_and_expr logical_or_prime
+                  | ε
+
+logical_and_expr -> equality_expr logical_and_prime
+
+logical_and_prime -> LOGICAL_AND equality_expr logical_and_prime
+                   | ε
+
+equality_expr -> relational_expr equality_prime
+
+equality_prime -> (EQ | NEQ) relational_expr equality_prime
+                  | ε
+
+relational_expr -> additive_expr relational_prime
+
+relational_prime -> (LT | GT | LTE | GTE) additive_expr relational_prime
+                  | ε
+
+additive_expr -> multiplicative_expr additive_prime
+
+additive_prime -> (PLUS | MINUS) multiplicative_expr additive_prime
+                  | ε
+
+multiplicative_expr -> unary_expr multiplicative_prime
+
+multiplicative_prime -> (MUL | DIV | MOD) unary_expr multiplicative_prime
+                        | ε
+
+unary_expr -> LOGICAL_NOT unary_expr
+            | MINUS unary_expr
+            | primary_expr
+
+primary_expr -> INTEGER
+             | DECIMAL
+             | STRING
+             | BOOLEAN
+             | IDENTIFIER
+             | LEFT_PAREN expression RIGHT_PAREN
+
+============================================================
+3. OPERATOR PRECEDENCE (Lowest to Highest)
+============================================================
+
+1.  ||                      (logical OR)
+2.  &&                      (logical AND)
+3.  ==  !=                  (equality)
+4.  <   >   <=  >=         (relational)
+5.  +   -                   (additive)
+6.  *   /   %               (multiplicative)
+7.  !   - (unary)           (unary)
+8.  ( )                     (parentheses)
+
+============================================================
+4. LEFT RECURSION ELIMINATION EXAMPLES
+============================================================
+
+Original (left-recursive):
+    additive_expr -> additive_expr + multiplicative_expr
+                   | multiplicative_expr
+
+Transformed (non-left-recursive, for recursive descent):
+    additive_expr -> multiplicative_expr additive_prime
+    additive_prime -> + multiplicative_expr additive_prime
+                     | ε
+
+Original (left-recursive):
+    multiplicative_expr -> multiplicative_expr * unary_expr
+                         | unary_expr
+
+Transformed:
+    multiplicative_expr -> unary_expr multiplicative_prime
+    multiplicative_prime -> * unary_expr multiplicative_prime
+                     | ε
+
+============================================================
+5. EXAMPLE PROGRAMS
+============================================================
+
+--- Program 1: Variables and Arithmetic ---
+make x = 10
+make y = 20
+make z = x + y
+show z
+
+--- Program 2: Conditional ---
+make age = 21
+check age >= 18
+    show "Adult"
+otherwise
+    show "Minor"
+finish
+
+--- Program 3: Loop ---
+make i = 0
+repeat 5
+    make i = i + 1
+    show i
+finish

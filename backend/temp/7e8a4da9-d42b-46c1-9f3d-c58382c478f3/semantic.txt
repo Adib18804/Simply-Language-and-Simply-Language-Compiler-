@@ -1,0 +1,3 @@
+SUCCESS=1
+ERRORS=0
+---SYMBOLS---

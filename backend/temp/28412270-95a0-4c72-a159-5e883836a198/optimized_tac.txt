@@ -1,0 +1,14 @@
+0	ASSIGN	score	85		1
+1	ASSIGN	t0	false		2
+2	JFALSE	L0	t0		2
+3	OUTPUT		"Grade: A"		3
+4	JUMP	L1			2
+5	LABEL	L0			0
+6	GTE	t1	score	75	5
+7	JFALSE	L2	t1		5
+8	OUTPUT		"Grade: B"		6
+9	JUMP	L3			5
+10	LABEL	L2			0
+11	OUTPUT		"Grade: C"		8
+12	LABEL	L3			0
+13	LABEL	L1			0

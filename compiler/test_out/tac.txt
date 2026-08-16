@@ -1,0 +1,5 @@
+0	ASSIGN	x	10		1
+1	ASSIGN	y	20		2
+2	ADD	t0	x	y	3
+3	ASSIGN	z	t0		3
+4	OUTPUT		z		4

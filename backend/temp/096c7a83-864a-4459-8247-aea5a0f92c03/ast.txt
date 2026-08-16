@@ -1,0 +1,4 @@
+PROGRAM | value=PROGRAM | line=1
+  STATEMENT_LIST | value=STMTS | line=1
+    OUTPUT | value=SHOW | line=1
+      IDENTIFIER | value=undeclared | line=1

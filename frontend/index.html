@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simply — Web-Based Educational Compiler</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/one-dark.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════ HEADER ══ -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">
+        <span class="logo-bracket">{</span>
+        <span class="logo-s">S</span>
+        <span class="logo-bracket">}</span>
+      </div>
+      <div class="brand-text">
+        <h1>Simply</h1>
+        <p>Web-Based Educational Compiler</p>
+      </div>
+    </div>
+
+    <div class="pipeline-bar">
+      <div class="pipeline-step" id="ps-lex" title="Lexical Analysis">
+        <div class="ps-icon">L</div>
+        <span>Lexer</span>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step" id="ps-parse" title="Syntax Analysis">
+        <div class="ps-icon">P</div>
+        <span>Parser</span>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step" id="ps-sem" title="Semantic Analysis">
+        <div class="ps-icon">S</div>
+        <span>Semantic</span>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step" id="ps-tac" title="Intermediate Code (TAC)">
+        <div class="ps-icon">I</div>
+        <span>IR / TAC</span>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step" id="ps-opt" title="Code Optimization">
+        <div class="ps-icon">O</div>
+        <span>Optimize</span>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step" id="ps-gen" title="Target Code Generation">
+        <div class="ps-icon">G</div>
+        <span>Codegen</span>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step" id="ps-run" title="GCC + Execute">
+        <div class="ps-icon">▶</div>
+        <span>Execute</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="example-picker">
+        <select id="exampleSelect" title="Load an example program">
+          <option value="-1">— Load Example —</option>
+          <option value="0">Hello World</option>
+          <option value="1">Variables &amp; Arithmetic</option>
+          <option value="2">Conditional (check/otherwise)</option>
+          <option value="3">Loop (repeat)</option>
+          <option value="4">Fibonacci Sequence</option>
+          <option value="5">Boolean &amp; Logic</option>
+          <option value="6">Nested Conditions</option>
+        </select>
+      </div>
+      <button id="btnClear" class="btn btn-ghost" title="Clear editor (Ctrl+L)">
+        <svg viewBox="0 0 24 24"><path d="M19 6H5M8 6V4h8v2M10 11v6M14 11v6M5 6l1 14h12L19 6"/></svg>
+        Clear
+      </button>
+      <button id="btnCompile" class="btn btn-compile" title="Compile (Ctrl+Enter)">
+        <svg viewBox="0 0 24 24"><path d="M9 3L3 12l6 9M15 3l6 9-6 9M9 12h6"/></svg>
+        Compile
+      </button>
+      <button id="btnRun" class="btn btn-run" title="Compile &amp; Run (Ctrl+Shift+Enter)">
+        <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        Run
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════ STATUS BAR ══ -->
+  <div class="status-bar">
+    <div class="status-left">
+      <span class="status-lang">Simply</span>
+      <span class="status-sep">|</span>
+      <span id="statusMsg">Ready — write code and press Compile or Run</span>
+    </div>
+    <div class="status-right">
+      <span id="lineColInfo">Ln 1, Col 1</span>
+      <span class="status-sep">|</span>
+      <span id="tokenCount">0 tokens</span>
+      <span class="status-sep">|</span>
+      <kbd>Ctrl+Enter</kbd> Compile &nbsp;
+      <kbd>Ctrl+Shift+Enter</kbd> Run
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ MAIN ══ -->
+  <main class="app-main">
+
+    <!-- LEFT: Editor Pane -->
+    <section class="pane pane-editor" id="editorPane">
+      <div class="pane-header">
+        <div class="pane-title">
+          <span class="pane-title-icon editor-icon">✎</span>
+          <span>Source Editor</span>
+        </div>
+        <div class="editor-meta">
+          <span class="chip chip-lang">Simply</span>
+          <span class="status-chip" id="statusChip">Ready</span>
+        </div>
+      </div>
+      <div class="editor-wrapper">
+        <textarea id="codeEditor"></textarea>
+      </div>
+      <div class="syntax-guide">
+        <div class="guide-title">Quick Reference</div>
+        <div class="guide-grid">
+          <div class="guide-item">
+            <code>make x = 10</code>
+            <span>declare variable</span>
+          </div>
+          <div class="guide-item">
+            <code>show x</code>
+            <span>print value</span>
+          </div>
+          <div class="guide-item">
+            <code>check cond<br>&nbsp;&nbsp;...<br>otherwise<br>&nbsp;&nbsp;...<br>finish</code>
+            <span>conditional</span>
+          </div>
+          <div class="guide-item">
+            <code>repeat 5<br>&nbsp;&nbsp;...<br>finish</code>
+            <span>loop n times</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Output Pane -->
+    <section class="pane pane-output" id="outputPane">
+      <div class="pane-header">
+        <div class="pane-title">
+          <span class="pane-title-icon output-icon">◎</span>
+          <span>Compiler Output</span>
+        </div>
+        <div class="tab-error-badge hidden" id="errorBadge">
+          <span id="errorCount">0</span> error(s)
+        </div>
+      </div>
+
+      <div class="tabs-wrapper">
+        <div class="tabs" id="tabs" role="tablist">
+          <button class="tab active" data-tab="tokens" role="tab" aria-selected="true" title="Lexical Analysis output">
+            <span class="tab-dot dot-lex"></span>Tokens
+          </button>
+          <button class="tab" data-tab="ast" role="tab" title="Abstract Syntax Tree">
+            <span class="tab-dot dot-parse"></span>AST
+          </button>
+          <button class="tab" data-tab="semantic" role="tab" title="Semantic Analysis &amp; Symbol Table">
+            <span class="tab-dot dot-sem"></span>Semantic
+          </button>
+          <button class="tab" data-tab="tac" role="tab" title="Three-Address Code (Intermediate Representation)">
+            <span class="tab-dot dot-tac"></span>TAC
+          </button>
+          <button class="tab" data-tab="optimized" role="tab" title="Optimized Intermediate Code">
+            <span class="tab-dot dot-opt"></span>Optimized
+          </button>
+          <button class="tab" data-tab="generatedc" role="tab" title="Generated C source code">
+            <span class="tab-dot dot-gen"></span>Generated C
+          </button>
+          <button class="tab" data-tab="output" role="tab" title="Program execution output">
+            <span class="tab-dot dot-run"></span>Output
+          </button>
+          <button class="tab tab-err" data-tab="errors" role="tab" title="All compile-time and runtime errors">
+            <span class="tab-dot dot-err"></span>Errors
+            <span class="err-count-badge hidden" id="errTabBadge">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tokens -->
+      <div class="tab-content" id="tab-tokens" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Lexical tokens produced by the lexer</span>
+          <span id="tokenStat" class="tc-stat"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="tokenTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>Sub-Type</th>
+                <th>Value</th>
+                <th>Line</th>
+                <th>Col</th>
+              </tr>
+            </thead>
+            <tbody id="tokenBody">
+              <tr class="placeholder-row">
+                <td colspan="6">Press <strong>Compile</strong> to see tokens generated by the lexer.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AST -->
+      <div class="tab-content hidden" id="tab-ast" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Abstract Syntax Tree — structural representation of the source</span>
+          <button class="btn-copy" data-target="astOut" title="Copy to clipboard">⎘ Copy</button>
+        </div>
+        <pre id="astOut" class="code-out">Press Compile to see the Abstract Syntax Tree...</pre>
+      </div>
+
+      <!-- Semantic -->
+      <div class="tab-content hidden" id="tab-semantic" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Symbol table &amp; semantic checks</span>
+        </div>
+        <div class="semantic-result" id="semanticResult">
+          <div class="sem-status-box" id="semStatusBox">
+            <span class="sem-icon">○</span>
+            <span id="semStatusText">Run Compile to perform semantic analysis.</span>
+          </div>
+        </div>
+        <div class="section-divider">Symbol Table</div>
+        <div class="table-wrap">
+          <table class="data-table" id="symbolTable">
+            <thead>
+              <tr><th>Name</th><th>Type</th><th>Scope</th><th>Declared At</th></tr>
+            </thead>
+            <tbody id="symbolBody">
+              <tr class="placeholder-row">
+                <td colspan="4">Symbol table will appear here after compilation.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="section-divider">Semantic Messages</div>
+        <pre id="semanticOut" class="code-out">No semantic issues.</pre>
+      </div>
+
+      <!-- TAC -->
+      <div class="tab-content hidden" id="tab-tac" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Three-Address Code — intermediate representation</span>
+          <button class="btn-copy" data-target="tacOut" title="Copy to clipboard">⎘ Copy</button>
+        </div>
+        <pre id="tacOut" class="code-out">Press Compile to generate the Three-Address Code (TAC)...</pre>
+      </div>
+
+      <!-- Optimized -->
+      <div class="tab-content hidden" id="tab-optimized" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Optimized TAC — after constant folding &amp; dead code elimination</span>
+          <button class="btn-copy" data-target="optOut" title="Copy to clipboard">⎘ Copy</button>
+        </div>
+        <pre id="optOut" class="code-out">Press Compile to see the Optimized TAC...</pre>
+      </div>
+
+      <!-- Generated C -->
+      <div class="tab-content hidden" id="tab-generatedc" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Target code — generated C source, compiled by GCC</span>
+          <button class="btn-copy" data-target="genOut" title="Copy to clipboard">⎘ Copy</button>
+        </div>
+        <pre id="genOut" class="code-out">Press Compile to generate C source code...</pre>
+      </div>
+
+      <!-- Output -->
+      <div class="tab-content hidden" id="tab-output" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">Program execution output — GCC compiled &amp; executed</span>
+          <button class="btn-copy" data-target="runOut" title="Copy to clipboard">⎘ Copy</button>
+        </div>
+        <div class="terminal-window">
+          <div class="terminal-titlebar">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+            <span class="term-label">simply-output</span>
+          </div>
+          <pre id="runOut" class="terminal-body">Click <strong>Run</strong> to compile and execute your Simply program...</pre>
+        </div>
+      </div>
+
+      <!-- Errors -->
+      <div class="tab-content hidden" id="tab-errors" role="tabpanel">
+        <div class="tc-toolbar">
+          <span class="tc-label">All errors — lexical, syntax, semantic, runtime</span>
+          <button class="btn-copy" data-target="errOut" title="Copy to clipboard">⎘ Copy</button>
+        </div>
+        <pre id="errOut" class="code-out success-text">No errors reported.</pre>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════ LOADING OVERLAY ══ -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">Compiling...</div>
+      <div class="loading-sub">Running compiler pipeline</div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

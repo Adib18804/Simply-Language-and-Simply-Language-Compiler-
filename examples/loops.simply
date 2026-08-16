@@ -1,0 +1,5 @@
+make i = 0
+repeat 5
+    make i = i + 1
+    show i
+finish
