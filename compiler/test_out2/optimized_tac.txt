@@ -1,8 +1,0 @@
-0	ASSIGN	age	21		1
-1	ASSIGN	t0	true		2
-2	JFALSE	L0	t0		2
-3	OUTPUT		"Adult"		3
-4	JUMP	L1			2
-5	LABEL	L0			0
-6	OUTPUT		"Minor"		5
-7	LABEL	L1			0

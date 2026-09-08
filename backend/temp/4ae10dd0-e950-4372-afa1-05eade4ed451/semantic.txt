@@ -1,4 +1,0 @@
-SUCCESS=0
-ERRORS=1
-ERR	UNDECLARED_VARIABLE	1	Variable 'undeclaredVar' has not been declared.
----SYMBOLS---

@@ -1,4 +1,0 @@
-SUCCESS=1
-ERRORS=0
----SYMBOLS---
-SYM	age	INT	0	1
