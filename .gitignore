@@ -1,0 +1,14 @@
+node_modules/
+
+# Compiler build artifacts (rebuilt via `npm run build:compiler`)
+compiler/debug1.exe
+compiler/test_out*/
+*.o
+
+# Per-request scratch directories created by the compiler service
+backend/temp/*
+!backend/temp/.gitkeep
+
+# Local Netlify folder
+.netlify
+deno.lock

@@ -1,0 +1,13 @@
+[build]
+  publish = "frontend"
+  command = "command -v gcc >/dev/null 2>&1 && npm run build:compiler || echo 'gcc not found in build image, using the pre-built compiler/simply-compiler.exe binary already committed to the repo'"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  included_files = ["compiler/simply-compiler.exe"]
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

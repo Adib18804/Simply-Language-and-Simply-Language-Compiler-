@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Simply — A Web-Based Compiler for a Custom Programming Language
 
 **Course:** Compiler Design Lab  
@@ -818,7 +817,3 @@ finish
 | Frontend fonts | JetBrains Mono, Inter | Monospace editor font, UI font |
 | Styling | Plain CSS (custom properties) | Dark IDE theme, pipeline visualizer |
 | Frontend logic | Vanilla JavaScript | Tab system, API calls, result rendering |
-=======
-# Simply-Language-and-Simply-Language-Compiler-
-I make a programming language that's called Simply and a Simply language compiler.
->>>>>>> 0502b0228587f0d687fcb7ff1a96e5e28f1153d8
